@@ -1,0 +1,54 @@
+"""
+URL configuration for financee project.
+
+The `urlpatterns` list routes URLs to views. For more information please see:
+    https://docs.djangoproject.com/en/5.2/topics/http/urls/
+Examples:
+Function views
+    1. Add an import:  from my_app import views
+    2. Add a URL to urlpatterns:  path('', views.home, name='home')
+Class-based views
+    1. Add an import:  from other_app.views import Home
+    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
+Including another URLconf
+    1. Import the include() function: from django.urls import include, path
+    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+"""
+from django.contrib import admin
+from django.urls import path, include
+from django.shortcuts import redirect
+
+from parties import urls as parties_urls
+from items import urls as items_urls
+from payments import urls as payments_urls
+from receipts import urls as receipt_urls
+from purchase import urls as purchase_urls
+from sale import urls as sale_urls
+from purchaseReturn import urls as purchase_return_urls
+from home import urls as home_urls
+from saleReturn import urls as sale_return_urls
+from accountsReports import urls as account_reports_urls
+from authentication import urls as authentication_urls
+
+
+def redirect_to_home(request):
+    if request.user.is_authenticated:
+        return redirect('home:home')
+    else:
+        return redirect('authentication:login')
+
+urlpatterns = [
+    path('', redirect_to_home, name='home_redirect'),
+    path('admin/', admin.site.urls),
+    path('parties/', include(parties_urls,namespace='parties')),
+    path('items/', include(items_urls, namespace='items')),
+    path('payments/',include(payments_urls,namespace='payments')),
+    path('receipts/',include(receipt_urls, namespace='receipts')),
+    path('purchase/',include(purchase_urls,namespace='purchase')),
+    path('sale/',include(sale_urls,namespace='sale')),
+    path('purchaseReturn/',include(purchase_return_urls,namespace='purchaseReturn')),
+    path('saleReturn/',include(sale_return_urls,namespace='saleReturn')),
+    path('home/', include(home_urls, namespace='home')),
+    path('accountsReports/',include(account_reports_urls,namespace='accountsReports')),
+    path('authentication/',include(authentication_urls,namespace='authentication')),
+]
