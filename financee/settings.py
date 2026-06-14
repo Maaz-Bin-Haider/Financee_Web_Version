@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'saleReturn',
     'accountsReports',
     'authentication',
+    'set_opening',
 ]
 
 MIDDLEWARE = [
