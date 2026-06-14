@@ -32,8 +32,8 @@ const API = {
   items:               "/home/api/items/",
 };
 
-const AED = new Intl.NumberFormat("en-AE", { style:"currency", currency:"AED", maximumFractionDigits:2 });
-const fmt  = n => AED.format(parseFloat(n) || 0);
+const PKR = new Intl.NumberFormat("en-AE", { style:"currency", currency:"PKR", currencyDisplay:"code", minimumFractionDigits:2, maximumFractionDigits:2 });
+const fmt  = n => PKR.format(parseFloat(n) || 0);
 const fmtN = n => (parseFloat(n) || 0).toLocaleString("en-AE");
 const esc  = s => String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 const $    = id => document.getElementById(id);
@@ -234,11 +234,11 @@ async function loadSalesChart(preset, customFrom, customTo) {
       interaction:{mode:"index",intersect:false},
       plugins:{
         legend:{position:"top",labels:{boxWidth:12,font:{size:11}}},
-        tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${AED.format(c.parsed.y)}`}},
+        tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${PKR.format(c.parsed.y)}`}},
       },
       scales:{
         x:{grid:{display:false},ticks:{font:{size:11}}},
-        y:{grid:{color:"#f1f5f9"},ticks:{callback:v=>"AED "+(v>=1000?(v/1000).toFixed(0)+"k":v),font:{size:10}}},
+        y:{grid:{color:"#f1f5f9"},ticks:{callback:v=>"PKR "+(v>=1000?(v/1000).toFixed(0)+"k":v),font:{size:10}}},
       },
     },
   });

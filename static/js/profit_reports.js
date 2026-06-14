@@ -32,7 +32,7 @@ function fmt(date) {
 
 function formatCurrency(value) {
   return new Intl.NumberFormat("en-PK", {
-    style: "currency", currency: "PKR", minimumFractionDigits: 2,
+    style: "currency", currency: "PKR", currencyDisplay: "code", minimumFractionDigits: 2,
   }).format(value || 0);
 }
 
