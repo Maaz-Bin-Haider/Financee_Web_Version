@@ -833,8 +833,9 @@ def monthly_position_report(request):
 def monthly_income_report(request):
     """
     GET  → renders the monthly reports HTML page
-    POST → calls monthly_income_statement(from, to, sales_revenue, cogs)
-           User supplies sales_revenue (already net of returns) and cogs manually.
+    POST → calls monthly_income_statement(from_date, to_date) and returns JSON.
+           Sales, Purchases and Expenses are auto-calculated for the period
+           (Pakistan model: Profit/Loss = Sales − Purchases − Expenses).
     """
     if not request.user.has_perm("auth.view_sale_wise_profit_report"):
         messages.error(request, "Access Denied!")
@@ -846,10 +847,8 @@ def monthly_income_report(request):
     elif request.method == "POST":
         try:
             data = json.loads(request.body)
-            from_date     = data.get("from_date")
-            to_date       = data.get("to_date")
-            sales_revenue = data.get("sales_revenue")
-            cogs          = data.get("cogs")
+            from_date = data.get("from_date")
+            to_date   = data.get("to_date")
 
             try:
                 datetime.strptime(from_date, "%Y-%m-%d")
@@ -857,16 +856,10 @@ def monthly_income_report(request):
             except (ValueError, TypeError):
                 return JsonResponse({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
 
-            try:
-                sales_revenue = float(sales_revenue)
-                cogs          = float(cogs)
-            except (ValueError, TypeError):
-                return JsonResponse({"error": "Sales Revenue and COGS must be valid numbers."}, status=400)
-
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "SELECT monthly_income_statement(%s, %s, %s, %s)",
-                    [from_date, to_date, sales_revenue, cogs]
+                    "SELECT monthly_income_statement(%s, %s)",
+                    [from_date, to_date]
                 )
                 row = cursor.fetchone()
 
