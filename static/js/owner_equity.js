@@ -15,15 +15,13 @@ function oeCsrf() {
   return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || "";
 }
 
+let _oeRows = [];
+let _oeSummary = { total_injections: 0, total_withdrawals: 0, net_contributed: 0 };
+
 function oeFmt(n) {
   return (parseFloat(n) || 0).toLocaleString("en-PK", {
     minimumFractionDigits: 2, maximumFractionDigits: 2,
   });
-}
-
-function oeSelect() {
-  document.querySelectorAll(".report-btn").forEach((b) => b.classList.remove("active"));
-  document.getElementById("btn-oe")?.classList.add("active");
 }
 
 async function oeLoadAccounts() {
@@ -48,6 +46,13 @@ async function oeLoadList() {
     const r = await fetch(OE_API.list, { headers: { "X-Requested-With": "XMLHttpRequest" } });
     if (!r.ok) return;
     const d = await r.json();
+
+    _oeSummary = {
+      total_injections: d.total_injections || 0,
+      total_withdrawals: d.total_withdrawals || 0,
+      net_contributed: d.net_contributed || 0,
+    };
+    _oeRows = d.transactions || [];
 
     document.getElementById("oe-total-inj").textContent = oeFmt(d.total_injections);
     document.getElementById("oe-total-wd").textContent  = oeFmt(d.total_withdrawals);
@@ -140,10 +145,70 @@ async function oeDelete(txnId) {
   }
 }
 
+/* ─────────────────────────── Export: PDF / CSV ─────────────────────────── */
+function oeExportPDF() {
+  if (!_oeRows.length) { Swal.fire("Nothing to export", "There are no entries yet.", "info"); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFontSize(15); doc.text("Owner Equity — Withdrawals & Capital", 14, 18);
+  doc.setFontSize(10);
+  doc.text("Generated " + new Date().toLocaleDateString("en-PK"), 14, 25);
+
+  doc.autoTable({
+    startY: 32,
+    head: [["Date", "Type", "Account", "Amount", "Note"]],
+    body: _oeRows.map((t) => [
+      t.txn_date || "",
+      t.direction === "withdrawal" ? "Withdrawal" : "Injection",
+      t.account || "",
+      (t.direction === "withdrawal" ? "-" : "+") + oeFmt(t.amount),
+      t.description || "",
+    ]),
+    theme: "grid",
+    headStyles: { fillColor: [37, 99, 235] },
+  });
+
+  doc.autoTable({
+    startY: doc.lastAutoTable.finalY + 6,
+    body: [
+      ["Capital injected", oeFmt(_oeSummary.total_injections)],
+      ["Withdrawn", oeFmt(_oeSummary.total_withdrawals)],
+      ["Net contributed", oeFmt(_oeSummary.net_contributed)],
+    ],
+    theme: "plain",
+    styles: { fontStyle: "bold" },
+  });
+
+  doc.save("owner_equity_" + new Date().toISOString().slice(0, 10) + ".pdf");
+}
+
+function oeExportCSV() {
+  if (!_oeRows.length) { Swal.fire("Nothing to export", "There are no entries yet.", "info"); return; }
+  const esc = (v) => '"' + String(v ?? "").replace(/"/g, '""') + '"';
+  const rows = [["Date", "Type", "Account", "Amount", "Note"].map(esc)];
+  _oeRows.forEach((t) => {
+    const signed = t.direction === "withdrawal" ? -Math.abs(t.amount) : Math.abs(t.amount);
+    rows.push([t.txn_date || "", t.direction, t.account || "", signed, t.description || ""].map(esc));
+  });
+  rows.push([]);
+  rows.push(["Capital injected", _oeSummary.total_injections].map(esc));
+  rows.push(["Withdrawn", _oeSummary.total_withdrawals].map(esc));
+  rows.push(["Net contributed", _oeSummary.net_contributed].map(esc));
+
+  const blob = new Blob([rows.map((r) => r.join(",")).join("\n")], { type: "text/csv;charset=utf-8;" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "owner_equity_" + new Date().toISOString().slice(0, 10) + ".csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(a.href);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const dt = document.getElementById("oe-date");
   if (dt) dt.value = new Date().toISOString().slice(0, 10);
   document.getElementById("oe-save-btn")?.addEventListener("click", oeSave);
+  document.getElementById("oe-download-pdf")?.addEventListener("click", oeExportPDF);
+  document.getElementById("oe-download-csv")?.addEventListener("click", oeExportCSV);
   oeLoadAccounts();
   oeLoadList();
 });

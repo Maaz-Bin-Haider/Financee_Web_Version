@@ -23,23 +23,24 @@
 
 <div class="reports-wrapper">
 
-  <!-- ====== LEFT PANEL ====== -->
-  <aside class="left-panel">
-    <h3>Owner Equity</h3>
-    <div class="report-buttons">
-      <button class="report-btn active" id="btn-oe" onclick="oeSelect()">
-        <i class="fa-solid fa-money-bill-transfer" style="margin-right:7px;font-size:0.78rem;"></i>Withdrawals &amp; Capital
-      </button>
-    </div>
-    <div class="oe-summary" id="oe-summary">
-      <div class="oe-summary-row"><span>Capital injected</span><span id="oe-total-inj">—</span></div>
-      <div class="oe-summary-row"><span>Withdrawn</span><span id="oe-total-wd">—</span></div>
-      <div class="oe-summary-row oe-net"><span>Net contributed</span><span id="oe-net">—</span></div>
-    </div>
-  </aside>
-
-  <!-- ====== RIGHT PANEL ====== -->
+  <!-- ====== CONTENT PANEL (full width) ====== -->
   <section class="right-panel">
+
+    <!-- Summary stat cards -->
+    <div class="oe-stats">
+      <div class="oe-stat">
+        <span class="oe-stat-label">Capital Injected</span>
+        <span class="oe-stat-value oe-stat-in" id="oe-total-inj">—</span>
+      </div>
+      <div class="oe-stat">
+        <span class="oe-stat-label">Withdrawn</span>
+        <span class="oe-stat-value oe-stat-out" id="oe-total-wd">—</span>
+      </div>
+      <div class="oe-stat oe-stat-net">
+        <span class="oe-stat-label">Net Contributed</span>
+        <span class="oe-stat-value" id="oe-net">—</span>
+      </div>
+    </div>
 
     <div class="form-section">
       <div class="oe-form">
@@ -78,7 +79,17 @@
         exactly this amount.
       </p>
 
-      <h3 class="oe-list-title">Recent owner-equity entries</h3>
+      <div class="oe-list-header">
+        <h3 class="oe-list-title">Recent owner-equity entries</h3>
+        <div class="table-actions">
+          <button type="button" id="oe-download-pdf" class="btn-download">
+            <i class="fa-solid fa-file-pdf"></i> PDF
+          </button>
+          <button type="button" id="oe-download-csv" class="btn-download btn-csv">
+            <i class="fa-solid fa-file-csv"></i> CSV
+          </button>
+        </div>
+      </div>
       <div class="oe-table-wrap">
         <table class="oe-table">
           <thead>
@@ -96,6 +107,8 @@
 
 <!-- Dependencies -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 <script src="{% static 'js/owner_equity.js' %}"></script>
 
 {% endblock body %}
