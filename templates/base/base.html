@@ -107,6 +107,11 @@
                 <i class="fa-solid fa-sliders"></i> Set Opening
             </a>
             {% endif %}
+            {% if perms.auth.can_manage_owner_equity %}
+            <a href="{% url 'owner_equity:owner_equity' %}" class="{% if request.resolver_match.url_name == 'owner_equity' %}active{% endif %}">
+                <i class="fa-solid fa-user-tie"></i> Owner Equity
+            </a>
+            {% endif %}
             </nav>
         </div>
 

@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'accountsReports',
     'authentication',
     'set_opening',
+    'owner_equity',
 ]
 
 MIDDLEWARE = [

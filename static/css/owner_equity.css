@@ -1,0 +1,85 @@
+/* Owner Equity — section styles (aligns with the app's shared look) */
+
+.oe-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: flex-end;
+  margin-bottom: 10px;
+}
+.oe-form .filter-field { display: flex; flex-direction: column; gap: 4px; min-width: 150px; }
+.oe-form .filter-field.oe-grow { flex: 1 1 220px; }
+.oe-form label { font-size: 0.75rem; color: var(--text-tertiary); font-weight: 600; }
+.oe-form input, .oe-form select {
+  padding: 8px 10px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: var(--radius-md, 8px);
+  font-size: 0.85rem;
+  background: #fff;
+}
+
+.oe-hint {
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+  background: var(--brand-primary-light, #ecfdf5);
+  border-radius: var(--radius-md, 8px);
+  padding: 10px 12px;
+  margin: 6px 0 18px;
+  line-height: 1.5;
+}
+
+.oe-summary {
+  margin-top: 16px;
+  border-top: 1px solid var(--border-color, #e2e8f0);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.oe-summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #475569);
+}
+.oe-summary-row.oe-net { font-weight: 700; color: var(--text-primary, #0f172a); }
+
+.oe-list-title { font-size: 0.95rem; margin: 6px 0 10px; }
+
+.oe-table-wrap { overflow-x: auto; }
+.oe-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+.oe-table th {
+  text-align: left;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-tertiary);
+  padding: 8px 10px;
+  border-bottom: 2px solid var(--border-color, #e2e8f0);
+}
+.oe-table td { padding: 9px 10px; border-bottom: 1px solid var(--border-color, #eef2f7); }
+.oe-empty { text-align: center; color: #94a3b8; padding: 18px 0; }
+
+.oe-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.oe-in  { background: #dcfce7; color: #166534; }
+.oe-out { background: #fee2e2; color: #991b1b; }
+
+.oe-amt { font-variant-numeric: tabular-nums; font-weight: 600; }
+.oe-amt-in  { color: #166534; }
+.oe-amt-out { color: #991b1b; }
+
+.oe-del {
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+.oe-del:hover { color: #dc2626; background: #fef2f2; }

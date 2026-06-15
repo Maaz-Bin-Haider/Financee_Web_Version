@@ -1,0 +1,101 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Owner Equity{% endblock title %}
+
+{% block SeperateCssFile %}
+<link rel="stylesheet" href="{% static 'css/owner_equity.css' %}">
+{% endblock SeperateCssFile %}
+
+{% block body %}
+
+<!-- Page title bar -->
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:1.1rem;">
+  <div style="width:36px;height:36px;background:var(--brand-primary-light);border-radius:var(--radius-md);
+              display:flex;align-items:center;justify-content:center;color:var(--brand-primary);font-size:0.95rem;flex-shrink:0;">
+    <i class="fa-solid fa-user-tie"></i>
+  </div>
+  <div>
+    <h2 style="margin:0;font-size:1.2rem;font-weight:700;letter-spacing:-0.02em;">Owner Equity</h2>
+    <p style="margin:0;font-size:0.78rem;color:var(--text-tertiary);">Owner withdrawals &amp; capital injections</p>
+  </div>
+</div>
+
+<div class="reports-wrapper">
+
+  <!-- ====== LEFT PANEL ====== -->
+  <aside class="left-panel">
+    <h3>Owner Equity</h3>
+    <div class="report-buttons">
+      <button class="report-btn active" id="btn-oe" onclick="oeSelect()">
+        <i class="fa-solid fa-money-bill-transfer" style="margin-right:7px;font-size:0.78rem;"></i>Withdrawals &amp; Capital
+      </button>
+    </div>
+    <div class="oe-summary" id="oe-summary">
+      <div class="oe-summary-row"><span>Capital injected</span><span id="oe-total-inj">—</span></div>
+      <div class="oe-summary-row"><span>Withdrawn</span><span id="oe-total-wd">—</span></div>
+      <div class="oe-summary-row oe-net"><span>Net contributed</span><span id="oe-net">—</span></div>
+    </div>
+  </aside>
+
+  <!-- ====== RIGHT PANEL ====== -->
+  <section class="right-panel">
+
+    <div class="form-section">
+      <div class="oe-form">
+        <div class="filter-field">
+          <label for="oe-direction">Type</label>
+          <select id="oe-direction">
+            <option value="withdrawal">Withdrawal (owner takes money out)</option>
+            <option value="injection">Capital injection (owner puts money in)</option>
+          </select>
+        </div>
+        <div class="filter-field">
+          <label for="oe-account">Capital account</label>
+          <select id="oe-account"></select>
+        </div>
+        <div class="filter-field">
+          <label for="oe-amount">Amount</label>
+          <input type="number" id="oe-amount" step="0.01" min="0" placeholder="0.00">
+        </div>
+        <div class="filter-field">
+          <label for="oe-date">Date</label>
+          <input type="date" id="oe-date">
+        </div>
+        <div class="filter-field oe-grow">
+          <label for="oe-desc">Note (optional)</label>
+          <input type="text" id="oe-desc" placeholder="e.g. monthly drawing">
+        </div>
+        <button type="button" class="generate-btn" id="oe-save-btn">
+          <i class="fa-solid fa-floppy-disk"></i> Record
+        </button>
+      </div>
+
+      <p class="oe-hint">
+        A withdrawal posts <strong>Debit Owner's Capital / Credit Cash</strong>; a capital
+        injection posts <strong>Debit Cash / Credit Owner's Capital</strong>. No cash is
+        invented and no party is involved, so the Company Position's Net Position moves by
+        exactly this amount.
+      </p>
+
+      <h3 class="oe-list-title">Recent owner-equity entries</h3>
+      <div class="oe-table-wrap">
+        <table class="oe-table">
+          <thead>
+            <tr><th>Date</th><th>Type</th><th>Account</th><th>Amount</th><th>Note</th><th></th></tr>
+          </thead>
+          <tbody id="oe-tbody">
+            <tr><td colspan="6" class="oe-empty">No entries yet</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+</div>
+
+<!-- Dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'js/owner_equity.js' %}"></script>
+
+{% endblock body %}
