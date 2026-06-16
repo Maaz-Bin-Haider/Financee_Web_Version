@@ -117,6 +117,11 @@
                 <i class="fa-solid fa-calendar-check"></i> Month-End Close
             </a>
             {% endif %}
+            {% if perms.auth.can_view_sales_summary or perms.auth.can_view_product_profitability or ... %}
+            <a href="{% url 'sales_reports:sales_reports' %}" class="{% if request.resolver_match.url_name == 'sales_reports' %}active{% endif %}">
+                <i class="fa-solid fa-chart-line"></i> Sales Reports
+            </a>
+            {% endif %}
             </nav>
         </div>
 
