@@ -31,6 +31,7 @@ from accountsReports import urls as account_reports_urls
 from authentication import urls as authentication_urls
 from set_opening import urls as set_opening_urls
 from owner_equity import urls as owner_equity_urls
+from month_close import urls as month_close_urls
 
 
 def redirect_to_home(request):
@@ -55,4 +56,5 @@ urlpatterns = [
     path('authentication/',include(authentication_urls,namespace='authentication')),
     path('set-opening/',include(set_opening_urls,namespace='set_opening')),
     path('owner-equity/', include(owner_equity_urls, namespace='owner_equity')),
+    path('month-close/', include(month_close_urls, namespace='month_close')),
 ]

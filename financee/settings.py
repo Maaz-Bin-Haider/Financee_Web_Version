@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'authentication',
     'set_opening',
     'owner_equity',
+    'month_close',
 ]
 
 MIDDLEWARE = [

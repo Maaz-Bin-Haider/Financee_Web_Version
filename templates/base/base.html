@@ -112,6 +112,11 @@
                 <i class="fa-solid fa-user-tie"></i> Owner Equity
             </a>
             {% endif %}
+            {% if perms.auth.can_close_period %}
+            <a href="{% url 'month_close:month_close' %}" class="{% if request.resolver_match.url_name == 'month_close' %}active{% endif %}">
+                <i class="fa-solid fa-calendar-check"></i> Month-End Close
+            </a>
+            {% endif %}
             </nav>
         </div>
 
