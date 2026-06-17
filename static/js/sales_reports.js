@@ -11,6 +11,17 @@ const intf  = (n) => (parseInt(n) || 0).toLocaleString("en-PK");
 const pctf  = (n) => (n === null || n === undefined ? "—" : (parseFloat(n) || 0).toFixed(2) + "%");
 const profitClass = (n) => (parseFloat(n) < 0 ? "sr-neg" : "sr-pos");
 
+/* professional, colourful palette for charts */
+const SR_PALETTE = ["#2563eb", "#0ea5e9", "#14b8a6", "#22c55e", "#6366f1", "#8b5cf6", "#f59e0b", "#fb7185", "#10b981", "#64748b"];
+
+/* show the chart card at a fixed height (keeps charts compact) */
+function showChartBox(heightPx, centered) {
+  const box = document.getElementById("sr-chart-box");
+  box.style.height = heightPx + "px";
+  box.classList.toggle("sr-centered", !!centered);
+  document.getElementById("sr-chart-wrap").style.display = "block";
+}
+
 /* ---------- report definitions ---------- */
 const REPORTS = {
   summary: {
@@ -117,16 +128,27 @@ function setRange(which) {
 /* ---------- report selection ---------- */
 function selectReport(key) {
   SR.key = key; SR.sort = { col: null, dir: 1 };
+  SR.rows = []; SR.totals = {}; SR.columns = [];
   const cfg = REPORTS[key];
   document.querySelectorAll("#sr-report-buttons .report-btn").forEach((b) => b.classList.toggle("active", b.dataset.report === key));
   document.getElementById("sr-report-title").textContent = cfg.title;
   document.getElementById("sr-report-sub").textContent = cfg.sub;
   document.getElementById("sr-form").style.display = "flex";
   document.getElementById("sr-gran-field").style.display = cfg.granularity ? "flex" : "none";
-  document.getElementById("sr-placeholder").style.display = "block";
-  document.getElementById("sr-placeholder").querySelector("p").textContent = "Choose a date range and hit Generate.";
-  ["sr-stats", "sr-chart-wrap", "sr-actions", "sr-table-wrap"].forEach((id) => (document.getElementById(id).style.display = "none"));
+
+  // --- wipe every trace of the previous report ---
   destroyChart();
+  document.getElementById("sr-stats").innerHTML = "";
+  document.getElementById("sr-thead").innerHTML = "";
+  document.getElementById("sr-tbody").innerHTML = "";
+  document.getElementById("sr-tfoot").innerHTML = "";
+  ["sr-stats", "sr-actions", "sr-table-wrap"].forEach((id) => (document.getElementById(id).style.display = "none"));
+  document.getElementById("sr-placeholder").style.display = "block";
+  document.getElementById("sr-placeholder").innerHTML =
+    `<i class="fa-solid fa-chart-line"></i><p>Loading ${cfg.title}…</p>`;
+
+  // auto-load the newly selected report with the current date range
+  generate();
 }
 
 /* ---------- fetch + render ---------- */
@@ -184,21 +206,22 @@ function renderSummary(d) {
      </div>`).join("");
   stats.style.display = "grid";
 
-  // doughnut: cost vs profit composition of revenue
-  document.getElementById("sr-chart-wrap").style.display = "block";
+  // doughnut: cost vs profit composition of revenue (compact, centred)
+  showChartBox(230, true);
   const ctx = document.getElementById("sr-chart");
   SR.chart = new Chart(ctx, {
     type: "doughnut",
     data: { labels: ["Cost of Sales", "Gross Profit"],
-      datasets: [{ data: [Math.max(d.total_cost, 0), Math.max(d.gross_profit, 0)], backgroundColor: ["#cbd5e1", "#2563eb"], borderWidth: 0 }] },
-    options: { responsive: true, animation: { animateRotate: true, duration: 700 },
-      plugins: { legend: { position: "bottom" }, title: { display: true, text: "Revenue composition" } } },
+      datasets: [{ data: [Math.max(d.total_cost, 0), Math.max(d.gross_profit, 0)], backgroundColor: ["#94a3b8", "#2563eb"], borderColor: "#fff", borderWidth: 2, hoverOffset: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: "62%", animation: { animateRotate: true, duration: 650 },
+      plugins: { legend: { position: "bottom", labels: { font: { size: 11 }, boxWidth: 12 } },
+        title: { display: true, text: "Revenue composition", font: { size: 12 }, color: "#475569" } } },
   });
   // summary has no table
   ["sr-actions", "sr-table-wrap"].forEach((id) => (document.getElementById(id).style.display = "none"));
-  SR.rows = [ ["Net Sales", d.net_sales], ["Cost of Sales", d.total_cost], ["Gross Profit", d.gross_profit],
-    ["Margin %", d.margin_pct], ["Invoices", d.invoice_count], ["Units Sold", d.units_sold],
-    ["Avg Invoice", d.avg_invoice], ["Returns count", d.returns_count], ["Returns value", d.returns_value] ];
+  SR.rows = [ ["Net Sales", money(d.net_sales)], ["Cost of Sales", money(d.total_cost)], ["Gross Profit", money(d.gross_profit)],
+    ["Margin %", pctf(d.margin_pct)], ["Invoices", intf(d.invoice_count)], ["Units Sold", intf(d.units_sold)],
+    ["Avg Invoice", money(d.avg_invoice)], ["Returns count", intf(d.returns_count)], ["Returns value", money(d.returns_value)] ];
   SR.columns = [{ k: 0, label: "Metric" }, { k: 1, label: "Value" }];
   document.getElementById("sr-actions").style.display = "flex";
 }
@@ -234,6 +257,10 @@ function drawTable(cfg) {
     });
   }
 
+  // Totals computed from the displayed rows — robust regardless of DB total key names.
+  SR.totals = {};
+  (cfg.totals || []).forEach((k) => { SR.totals[k] = SR.rows.reduce((s, r) => s + (parseFloat(r[k]) || 0), 0); });
+
   if (!rows.length) {
     tbody.innerHTML = `<tr><td class="sr-empty" colspan="${cfg.columns.length}">No data for this period</td></tr>`;
     tfoot.innerHTML = ""; 
@@ -267,7 +294,12 @@ function fmtCell(c, v) {
 }
 
 /* ---------- charts ---------- */
-function destroyChart() { if (SR.chart) { SR.chart.destroy(); SR.chart = null; } document.getElementById("sr-chart-wrap").style.display = "none"; }
+function destroyChart() {
+  if (SR.chart) { SR.chart.destroy(); SR.chart = null; }
+  const w = document.getElementById("sr-chart-wrap");
+  w.style.display = "none";
+  document.getElementById("sr-chart-box").classList.remove("sr-centered");
+}
 
 function drawBarChart(cfg) {
   destroyChart();
@@ -275,13 +307,19 @@ function drawBarChart(cfg) {
   const top = SR.rows.slice().sort((a, b) => (parseFloat(b[cfg.chart.valueKey]) || 0) - (parseFloat(a[cfg.chart.valueKey]) || 0)).slice(0, cfg.chart.topN);
   const labels = top.map((r) => r[cfg.chart.labelKey] || "—");
   const data = top.map((r) => parseFloat(r[cfg.chart.valueKey]) || 0);
-  document.getElementById("sr-chart-wrap").style.display = "block";
+  const colors = top.map((_, i) => SR_PALETTE[i % SR_PALETTE.length]);
+  showChartBox(Math.max(180, 40 + top.length * 24));   // compact, grows a little with row count
   SR.chart = new Chart(document.getElementById("sr-chart"), {
     type: "bar",
-    data: { labels, datasets: [{ label: cfg.chart.label, data, backgroundColor: "#2563eb", borderRadius: 4 }] },
-    options: { indexAxis: "y", responsive: true, animation: { duration: 700 },
-      plugins: { legend: { display: false }, title: { display: true, text: cfg.chart.label } },
-      scales: { x: { ticks: { callback: (v) => Number(v).toLocaleString("en-PK") } } } },
+    data: { labels, datasets: [{ label: cfg.chart.label, data, backgroundColor: colors, borderRadius: 5, maxBarThickness: 22 }] },
+    options: {
+      indexAxis: "y", responsive: true, maintainAspectRatio: false, animation: { duration: 650 },
+      plugins: { legend: { display: false }, title: { display: true, text: cfg.chart.label, font: { size: 12 }, color: "#475569" } },
+      scales: {
+        x: { ticks: { callback: (v) => Number(v).toLocaleString("en-PK"), font: { size: 10 } }, grid: { color: "#f1f5f9" } },
+        y: { ticks: { font: { size: 10 } }, grid: { display: false } },
+      },
+    },
   });
 }
 
@@ -295,17 +333,19 @@ function renderTrend(cfg, d) {
   SR.columns = cfg.columns;
 
   destroyChart();
-  document.getElementById("sr-chart-wrap").style.display = "block";
+  showChartBox(260);
   const labels = SR.rows.map((r) => r.period);
   SR.chart = new Chart(document.getElementById("sr-chart"), {
     type: "line",
     data: { labels, datasets: [
-      { label: "Revenue", data: SR.rows.map((r) => +r.revenue), borderColor: "#2563eb", backgroundColor: "rgba(37,99,235,0.08)", fill: true, tension: 0.3, yAxisID: "y" },
-      { label: "Profit", data: SR.rows.map((r) => +r.profit), borderColor: "#15803d", backgroundColor: "rgba(21,128,61,0.06)", fill: true, tension: 0.3, yAxisID: "y" },
+      { label: "Revenue", data: SR.rows.map((r) => +r.revenue), borderColor: "#2563eb", backgroundColor: "rgba(37,99,235,0.10)", fill: true, tension: 0.35, borderWidth: 2, pointRadius: 2, pointHoverRadius: 4, yAxisID: "y" },
+      { label: "Profit", data: SR.rows.map((r) => +r.profit), borderColor: "#16a34a", backgroundColor: "rgba(22,163,74,0.10)", fill: true, tension: 0.35, borderWidth: 2, pointRadius: 2, pointHoverRadius: 4, yAxisID: "y" },
     ] },
-    options: { responsive: true, animation: { duration: 800 }, interaction: { mode: "index", intersect: false },
-      plugins: { legend: { position: "bottom" }, title: { display: true, text: "Revenue & profit trend" } },
-      scales: { y: { ticks: { callback: (v) => Number(v).toLocaleString("en-PK") } } } },
+    options: { responsive: true, maintainAspectRatio: false, animation: { duration: 700 }, interaction: { mode: "index", intersect: false },
+      plugins: { legend: { position: "bottom", labels: { font: { size: 11 }, boxWidth: 12 } },
+        title: { display: true, text: "Revenue & profit trend", font: { size: 12 }, color: "#475569" } },
+      scales: { x: { ticks: { font: { size: 10 } }, grid: { display: false } },
+        y: { ticks: { callback: (v) => Number(v).toLocaleString("en-PK"), font: { size: 10 } }, grid: { color: "#f1f5f9" } } } },
   });
 
   drawTable(cfg);
@@ -317,16 +357,57 @@ function exportPDF() {
   if (!SR.rows.length) { Swal.fire("Nothing to export", "Generate a report first.", "info"); return; }
   const cfg = REPORTS[SR.key];
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation: SR.columns.length > 6 ? "landscape" : "portrait" });
-  doc.setFontSize(14); doc.text(cfg.title, 14, 16);
-  doc.setFontSize(9);
+  const landscape = SR.columns.length > 6;
+  const doc = new jsPDF({ orientation: landscape ? "landscape" : "portrait", unit: "mm", format: "a4" });
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const BRAND = [37, 99, 235];
   const from = document.getElementById("sr-from").value, to = document.getElementById("sr-to").value;
-  doc.text(`${from} to ${to}  ·  generated ${new Date().toLocaleDateString("en-PK")}`, 14, 22);
+
+  // right-align numeric columns
+  const columnStyles = {};
+  SR.columns.forEach((c, i) => { if (["int", "money", "pct", "profit"].includes(c.t)) columnStyles[i] = { halign: "right" }; });
 
   const head = [SR.columns.map((c) => c.label)];
   const body = SR.rows.map((row) => SR.columns.map((c) => exportVal(c, row[c.k])));
-  const foot = (cfg.totals) ? [SR.columns.map((c, i) => i === 0 ? "Total" : (cfg.totals.includes(c.k) ? (c.t === "int" ? intf(SR.totals[c.k]) : money(SR.totals[c.k])) : ""))] : [];
-  doc.autoTable({ startY: 27, head, body, foot, theme: "grid", headStyles: { fillColor: [37, 99, 235] }, footStyles: { fillColor: [241, 245, 249], textColor: 20, fontStyle: "bold" }, styles: { fontSize: 7.5 } });
+  const foot = (cfg.totals && cfg.totals.length)
+    ? [SR.columns.map((c, i) => i === 0 ? "Total"
+        : (cfg.totals.includes(c.k) ? (c.t === "int" ? intf(SR.totals[c.k]) : money(SR.totals[c.k])) : ""))]
+    : [];
+
+  doc.autoTable({
+    head, body, foot,
+    margin: { top: 24, bottom: 18, left: 12, right: 12 },
+    theme: "striped",
+    headStyles: { fillColor: BRAND, textColor: 255, fontStyle: "bold", fontSize: 8 },
+    bodyStyles: { fontSize: 7.5, textColor: [30, 41, 59], cellPadding: 1.8 },
+    alternateRowStyles: { fillColor: [244, 247, 252] },
+    footStyles: { fillColor: [219, 234, 254], textColor: [15, 23, 42], fontStyle: "bold", fontSize: 8 },
+    columnStyles,
+    didDrawPage: (data) => {
+      // ----- header band -----
+      doc.setFillColor(BRAND[0], BRAND[1], BRAND[2]);
+      doc.rect(0, 0, pageW, 17, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(13);
+      doc.text(cfg.title, 12, 8.5);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(7.5);
+      doc.text(cfg.sub, 12, 13.5);
+      doc.setFontSize(8.5); doc.setFont("helvetica", "bold");
+      doc.text("Financee", pageW - 12, 7.5, { align: "right" });
+      doc.setFont("helvetica", "normal"); doc.setFontSize(7.5);
+      doc.text(`${from}  to  ${to}`, pageW - 12, 12.5, { align: "right" });
+      // ----- footer -----
+      doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.3);
+      doc.line(12, pageH - 12.5, pageW - 12, pageH - 12.5);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(7.5); doc.setTextColor(BRAND[0], BRAND[1], BRAND[2]);
+      doc.text("Generated by Financee Accounts System", 12, pageH - 8);
+      doc.setFont("helvetica", "italic"); doc.setTextColor(120, 130, 145); doc.setFontSize(7);
+      doc.text("Developed by Maaz", 12, pageH - 4);
+      doc.setFont("helvetica", "normal"); doc.setTextColor(120, 130, 145);
+      doc.text(`${new Date().toLocaleDateString("en-PK")}   ·   Page ${data.pageNumber}`, pageW - 12, pageH - 6, { align: "right" });
+    },
+  });
   doc.save(cfg.title.replace(/\s+/g, "_").toLowerCase() + "_" + from + "_" + to + ".pdf");
 }
 
