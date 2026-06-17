@@ -1,0 +1,56 @@
+/* ============================================================
+   CONTRA ENTRY — page-specific styles
+   (shared shell comes from payment.css)
+   ============================================================ */
+
+/* From -> To row with an arrow between the two party fields */
+.contra-parties {
+  align-items: flex-start;
+}
+
+.contra-parties .form-group {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.contra-arrow {
+  flex: 0 0 auto;
+  align-self: center;
+  margin-top: 18px;
+  color: var(--accent, #2563eb);
+  font-size: 1.1rem;
+  opacity: 0.85;
+  padding: 0 2px;
+}
+
+.contra-hint {
+  font-weight: 400;
+  font-size: 0.72rem;
+  color: var(--text-tertiary, #94a3b8);
+  margin-left: 4px;
+}
+
+/* suggestion dropdown box (same look as payment suggestions) */
+.suggestions-box {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+/* On narrow screens stack the two parties and rotate the arrow */
+@media (max-width: 640px) {
+  .contra-parties { flex-direction: column; }
+  .contra-arrow {
+    margin: 2px 0;
+    transform: rotate(90deg);
+    align-self: center;
+  }
+}

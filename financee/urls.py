@@ -33,6 +33,7 @@ from set_opening import urls as set_opening_urls
 from owner_equity import urls as owner_equity_urls
 from month_close import urls as month_close_urls
 from sales_reports import urls as sales_reports_urls
+from contra import urls as contra_urls
 
 
 def redirect_to_home(request):
@@ -59,4 +60,5 @@ urlpatterns = [
     path('owner-equity/', include(owner_equity_urls, namespace='owner_equity')),
     path('month-close/', include(month_close_urls, namespace='month_close')),
     path('sales-reports/', include(sales_reports_urls, namespace='sales_reports')),
+    path('contra/', include(contra_urls, namespace='contra')),
 ]
