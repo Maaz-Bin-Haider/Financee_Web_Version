@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'month_close',
     'sales_reports',
     'contra',
+    'opening_stock',
 ]
 
 MIDDLEWARE = [
