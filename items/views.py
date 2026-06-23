@@ -523,7 +523,8 @@ def create_new_item(request):
                 "sale_price": float(sale_price or 0),
                 "item_code": item_code,
                 "category": category,
-                "brand": brand
+                "brand": brand,
+                "created_by_id": request.user.id
             }
 
             json_data = json.dumps(item_data)
@@ -724,3 +725,50 @@ def items_hub(request):
         messages.error(request, "You do not have permission to view Items!")
         return redirect("home:home")
     return render(request, "items_templates/items.html")
+
+
+@login_required
+def items_list_json(request):
+    """
+    Returns the full catalogue of items as JSON for the 'All Items' table:
+    name, price, storage, code, category, brand, who added/last-touched it,
+    and the created/updated timestamps.
+    """
+    if not request.user.has_perm("auth.view_item"):
+        return JsonResponse({"status": "error", "message": "You do not have permission to view Items!"}, status=403)
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT i.item_id,
+                   i.item_name,
+                   i.sale_price,
+                   i.storage,
+                   i.item_code,
+                   i.category,
+                   i.brand,
+                   COALESCE(u.username, 'N/A') AS created_by,
+                   i.created_at,
+                   i.updated_at
+            FROM Items i
+            LEFT JOIN auth_user u ON u.id = i.created_by
+            ORDER BY i.created_at DESC NULLS LAST, i.item_id DESC
+        """)
+        rows = cursor.fetchall()
+
+    def fmt(dt):
+        return dt.strftime("%d %b %Y, %I:%M %p") if dt else ""
+
+    items = [{
+        "item_id": r[0],
+        "item_name": r[1],
+        "sale_price": str(r[2]) if r[2] is not None else "0.00",
+        "storage": r[3] or "",
+        "item_code": r[4] or "",
+        "category": r[5] or "",
+        "brand": r[6] or "",
+        "created_by": r[7],
+        "created_at": fmt(r[8]),
+        "updated_at": fmt(r[9]),
+    } for r in rows]
+
+    return JsonResponse({"status": "success", "count": len(items), "items": items})
