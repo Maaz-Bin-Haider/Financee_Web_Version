@@ -124,6 +124,40 @@ def delete_opening_stock(request):
 
 
 @login_required
+def check_serials(request):
+    """Live serial validation for the entry form (mirrors purchase check).
+
+    Returns {success, results:{serial:{status:'ok'|'in_stock'|'ever_existed'}}}.
+    """
+    if not request.user.has_perm(VIEW_PERM):
+        return JsonResponse({"success": False, "message": "Permission denied."})
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "POST required."})
+    try:
+        payload = json.loads(request.body or "{}")
+    except (ValueError, TypeError):
+        return JsonResponse({"success": False, "message": "Invalid JSON."})
+    serials = payload.get("serials", [])
+    if not isinstance(serials, list):
+        return JsonResponse({"success": False, "message": "'serials' must be a list."})
+    cleaned = [str(s).strip() for s in serials if str(s).strip()]
+    results = {}
+    if cleaned:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT serial_number, in_stock FROM purchaseunits WHERE serial_number = ANY(%s)",
+                [cleaned],
+            )
+            found = {r[0]: r[1] for r in cursor.fetchall()}
+        for s in cleaned:
+            if s in found:
+                results[s] = {"status": "in_stock" if found[s] else "ever_existed", "label": ""}
+            else:
+                results[s] = {"status": "ok", "label": ""}
+    return JsonResponse({"success": True, "results": results})
+
+
+@login_required
 def opening_balance_status(request):
     """Return the Opening Balance Equity status (balance + needs_reclass)."""
     if not request.user.has_perm(VIEW_PERM):
