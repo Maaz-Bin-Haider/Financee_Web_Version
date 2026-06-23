@@ -25,9 +25,36 @@
 .os-obe-hint { font-size: 0.74rem; color: var(--text-tertiary); }
 
 /* layout */
-.os-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); gap: 16px; align-items: start; }
-@media (max-width: 1100px) { .os-grid { grid-template-columns: 1fr; } }
+/* layout — form full-width with the loads list below (mirrors Purchase) */
+.os-grid { display: flex; flex-direction: column; gap: 16px; }
 .os-form-card.sale-card { width: 100%; max-width: none; margin: 0; }
+.os-list-card { width: 100%; }
+
+/* Narrow-screen fallback so the rigid 5-col item row wraps instead of
+   overflowing: Item/Cost/Qty on row 1, Serials full-width on row 2,
+   Actions full-width on row 3. */
+@media (max-width: 1024px) {
+  .os-form-card .items-col-headers { display: none; }
+  .os-form-card .item-row.purchase-row {
+    grid-template-columns: 1fr 110px 70px;
+    grid-template-rows: auto auto auto;
+    gap: 10px;
+  }
+  .os-form-card .item-row.purchase-row .item_name_field { grid-column: 1; grid-row: 1; }
+  .os-form-card .item-row.purchase-row input.unit_price { grid-column: 2; grid-row: 1; }
+  .os-form-card .item-row.purchase-row .qty-box          { grid-column: 3; grid-row: 1; }
+  .os-form-card .item-row.purchase-row .serials          { grid-column: 1 / -1; grid-row: 2; }
+  .os-form-card .item-row.purchase-row .row-actions      {
+    grid-column: 1 / -1; grid-row: 3;
+    flex-direction: row; flex-wrap: wrap; gap: 6px;
+  }
+}
+@media (max-width: 560px) {
+  .os-form-card .item-row.purchase-row { grid-template-columns: 1fr 1fr; }
+  .os-form-card .item-row.purchase-row .item_name_field { grid-column: 1 / -1; }
+  .serial-pair { flex-wrap: wrap; }
+  .serial-pair input.sn { flex: 1 1 100%; }
+}
 
 .os-card {
   background: var(--bg-surface); border: 1px solid var(--border-color);

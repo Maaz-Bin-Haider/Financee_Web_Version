@@ -286,7 +286,6 @@
       </div>
       <input type="number" class="unit_price" step="0.01" min="0" placeholder="0.00">
       <input type="number" class="qty-box" readonly value="0">
-      <div></div>
       <div class="serials" style="display:flex;flex-direction:column;gap:4px;"></div>
       <div class="row-actions">
         <button type="button" class="custom-btn add-serial add-serial-btn">＋ Serial</button>
