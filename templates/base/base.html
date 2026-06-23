@@ -89,7 +89,7 @@
             <a href="{% url 'purchaseReturn:create_purchase_return' %}" class="{% if request.resolver_match.url_name == 'create_purchase_return' %}active{% endif %}">
                 <i class="fa-solid fa-rotate-right"></i> Purchase Return
             </a>
-            <a href="{% url 'items:add_new_item' %}" class="{% if request.resolver_match.url_name == 'add_new_item' %}active{% endif %}">
+            <a href="{% url 'items:itemsDash' %}" class="{% if request.resolver_match.namespace == 'items' %}active{% endif %}">
                 <i class="fa-solid fa-box"></i> Items
             </a>
             <a href="{% url 'parties:partiesDash' %}" class="{% if request.resolver_match.url_name == 'add_new_party' %}active{% endif %}">
