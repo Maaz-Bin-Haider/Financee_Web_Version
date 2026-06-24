@@ -91,9 +91,7 @@ body {
 }
 #container { background: var(--bg); min-width: 320px; }
 .main, #main { background: var(--bg); }
-#content { padding: 28px 40px; max-width: 2000px; margin: 0 auto; box-sizing: border-box; }
-.dashboard #content { width: 80%; max-width: 2000px; margin: 0 auto; }
-.popup #content { width: auto; max-width: none; margin: 0; }
+#content { padding: 28px 36px; max-width: 1640px; }
 a:link, a:visited { color: var(--accent); }
 a:hover { color: var(--accent-dark); }
 
@@ -140,8 +138,7 @@ a:hover { color: var(--accent-dark); }
 /* ============================ BREADCRUMBS ============================ */
 div.breadcrumbs {
   background: transparent; color: var(--muted); border: none;
-  width: 80%; max-width: 2000px; margin: 0 auto;
-  padding: 18px 4px 4px; font-size: 0.8rem; font-weight: 500;
+  padding: 18px 36px 4px; font-size: 0.8rem; font-weight: 500;
 }
 div.breadcrumbs a { color: var(--accent); }
 div.breadcrumbs a:hover { color: var(--accent-dark); }
@@ -347,7 +344,7 @@ body.login { background: var(--bg); }
   box-shadow: var(--sh-lg); margin: 6% auto 0; max-width: 410px; overflow: hidden; min-width: 0;
 }
 .login #header { min-height: 0; padding: 24px 30px; justify-content: center; border-radius: 0; }
-.login #content { padding: 28px 32px 32px; width: auto; max-width: none; margin: 0; }
+.login #content { padding: 28px 32px 32px; }
 .login .form-row { padding: 9px 0; border: none; }
 .login .form-row label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--quiet); font-weight: 700; }
 .login input[type=text], .login input[type=password] { width: 100%; }
